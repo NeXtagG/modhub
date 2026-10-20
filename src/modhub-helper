@@ -1,0 +1,56 @@
+#!/usr/bin/python3 -I
+"""Root half of ModHub, run via pkexec. Only two things need root:
+  pacman ARGS...      — pacman itself (also what yay calls through modhub-sudo)
+  spotify-own DIR     — give the calling user a root-owned Spotify dir so
+                        spicetify can patch it (pacman resets it on update)"""
+
+import os
+import sys
+
+PACMAN = "/usr/bin/pacman"
+SPOTIFY_ROOT_DIRS = ["/opt/spotify", "/usr/share/spotify"]
+
+
+def die(msg):
+    print(f"ОШИБКА: {msg}", file=sys.stderr, flush=True)
+    sys.exit(2)
+
+
+def caller():
+    uid = os.environ.get("PKEXEC_UID")
+    if not uid or not uid.isdigit() or int(uid) == 0:
+        die("запускать только через pkexec от обычного пользователя")
+    import pwd
+    pw = pwd.getpwuid(int(uid))
+    return pw.pw_uid, pw.pw_gid
+
+
+def spotify_own(path):
+    path = os.path.realpath(path)
+    if path not in SPOTIFY_ROOT_DIRS or not os.path.isdir(os.path.join(path, "Apps")):
+        die(f"{path} — не папка Spotify")
+    uid, gid = caller()
+    os.lchown(path, uid, gid)
+    for root, dirs, files in os.walk(path):
+        for n in dirs + files:
+            os.lchown(os.path.join(root, n), uid, gid)
+    print(f"{path} теперь принадлежит пользователю {uid}", flush=True)
+
+
+def main(argv):
+    if os.geteuid() != 0:
+        die("нужны права root")
+    if not argv:
+        die("нет команды")
+    cmd, args = argv[0], argv[1:]
+    if cmd in ("pacman", PACMAN):
+        caller()
+        os.execv(PACMAN, [PACMAN] + args)
+    if cmd == "spotify-own" and len(args) == 1:
+        spotify_own(args[0])
+        return 0
+    die(f"неизвестная команда: {cmd}")
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

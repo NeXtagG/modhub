@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=ModHub
+GenericName=Обновления и моды Steam, Discord, Spotify
+Comment=Обновить Steam, Discord и Spotify; поставить Millennium, Vencord и Spicetify
+Exec=modhub
+Icon=modhub
+Terminal=false
+Categories=Utility;System;
+Keywords=steam;discord;spotify;millennium;vencord;spicetify;моды;обновить;
+StartupWMClass=org.modhub.ModHub

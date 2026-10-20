@@ -1,0 +1,9 @@
+#!/usr/bin/python3 -I
+import os
+import sys
+
+here = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, "/usr/lib/modhub" if here == "/usr/bin" else here)
+from modhub.gui import main  # noqa: E402
+
+sys.exit(main())

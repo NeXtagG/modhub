@@ -1,0 +1,6 @@
+#!/bin/sh
+# yay --sudo: yay runs `<this> pacman ARGS` (and `<this> -v` with sudoloop);
+# route pacman through polkit, the keep-alive needs nothing
+[ "$1" = "-v" ] && exit 0
+here=$(dirname "$(readlink -f "$0")")
+exec pkexec "$here/modhub-helper" "$@"
